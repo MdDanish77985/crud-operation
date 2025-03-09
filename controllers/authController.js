@@ -3,8 +3,46 @@ const bcrypt = require("bcrypt");               // For hashing passwords
 const jwt = require("jsonwebtoken")             // JWT for token generation
 const sendEmail = require("../utils/sendEmail");// Email utility for sending OTP
 // const crypto = require("crypto");               // Generates random OTP
+const {initializeSuperAdmin} = require("./superAdmin"); // Import function to create superadmin
+const Role = require("../models/roleModel"); // Import role model
 
+//Route handle for for creating a superAdmin
+const createSuperAdmin = async (req, res) => {
+    try {
+        const response = await initializeSuperAdmin(); // Call function
 
+        if (response.success) {
+            return res.status(201).json({ message: "✅ Superadmin created successfully"});
+        } else {
+            return res.status(400).json({ message: "Superadmin already exists"});
+        }
+    } catch (error) {
+        return res.status(500).json({ message: "❌ Internal Server Error", error: error.message });
+    }
+};
+const createAdmin = async (req, res) => {
+    try {
+        const { name, email, password } = req.body;
+
+        // ✅ Check if Admin already exists
+        const existingAdmin = await User.findOne({ email });
+        if (existingAdmin) {
+            return res.status(400).json({ message: "Admin already exists" });
+        }
+
+        // ✅ Password Hashing
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // ✅ Admin Create
+        const newAdmin = new User({ name, email, password: hashedPassword ,userRoleId:2});
+        await newAdmin.save();
+
+        res.status(201).json({ message: "Admin created successfully" });
+
+    } catch (error) {
+        res.status(500).json({ message: "Server error", error });
+    }
+}
 // ✅ Forgot Password Controller
 const forgotPassword = async (req, res) => {
     try {
@@ -239,4 +277,4 @@ const deleteUser = async (req, res) => {
 };
 
 // ✅ Export the controller function
-module.exports = { signup, signIn, forgotPassword, resetPassword, updateUser, deleteUser, verifyOtp };
+module.exports = {createSuperAdmin,createAdmin,signup, signIn, forgotPassword, resetPassword, updateUser, deleteUser, verifyOtp };

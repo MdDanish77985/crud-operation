@@ -1,11 +1,14 @@
 const express = require("express");                   // Import Express
-const { signup, signIn, forgotPassword, resetPassword, updateUser, deleteUser,verifyOtp} = require("../controllers/authController");
+const {createSuperAdmin,signup, signIn, forgotPassword, resetPassword, updateUser, deleteUser,verifyOtp, createAdmin} = require("../controllers/authController");
 const authMiddleware = require("../middleware/authmiddleware");
 const upload = require("../middleware/upload");
+const superadminMiddleware = require("../middleware/superAdminmiddleware");
 
 const router = express.Router();                      // Create router
 
-router.post("/signup",upload.single("photo"), signup);                       // Signup route
+router.post("/create-super-admin", createSuperAdmin); // Create superadmin route
+router.post("/create-admin", superadminMiddleware, createAdmin); // Create admin route
+router.post("/signup",upload.single("photo"), signup); // Signup route
 router.post("/signIn", signIn);                       // Signin route
 router.post("/forgot-password", forgotPassword);      // Forgot password (send OTP)
 router.post("/reset-password", resetPassword);        // Reset password (verify OTP)
